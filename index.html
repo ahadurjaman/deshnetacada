@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>দেশনেতার চাঁদা ক্যালকুলেটর</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+Bengali:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Noto Sans Bengali', 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .btn-primary {
+            background-color: #1a73e8;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3);
+        }
+        .btn-primary:hover {
+            background-color: #1558b0;
+            transform: translateY(-2px);
+        }
+        .btn-download {
+            background-color: #8e24aa;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(142, 36, 170, 0.3);
+        }
+        .btn-download:hover {
+            background-color: #6a1b9a;
+            transform: translateY(-2px);
+        }
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+        .result-box {
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: center;
+            animation: slideIn 0.5s ease-out;
+            border: 2px solid; /* Thicker border for better design */
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        /* Updated result box designs - more vibrant and distinct */
+        .result-box.red { background-color: #fff3e0; border-color: #ff9800; color: #e65100; } /* Light orange with deep orange border */
+        .result-box.blue { background-color: #e0f2f7; border-color: #03a9f4; color: #01579b; } /* Light cyan with deep blue border */
+        .result-box.green { background-color: #e8f5e9; border-color: #8bc34a; color: #33691e; } /* Light green with lime green border */
+
+        .receipt-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .receipt-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .receipt-content {
+            background-color: #ffffff;
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        .receipt-modal.show .receipt-content {
+            transform: translateY(0);
+        }
+        .receipt-header {
+            background-color: #1a73e8;
+            color: white;
+            padding: 15px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            margin: -30px -30px 20px -30px;
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .receipt-details p {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        .receipt-footer {
+            background-color: #f0f2f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-style: italic;
+            color: #555;
+        }
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: white;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-md w-full mx-auto">
+        <!-- Main Calculator Card -->
+        <div class="card p-8 rounded-xl shadow-lg text-center mb-6">
+            <h1 class="text-3xl font-bold text-blue-700 mb-4 animate-bounce">দেশনেতার চাঁদা ক্যালকুলেটর</h1>
+            <p class="text-gray-600 mb-6">আপনার আত্মত্যাগের হিসাব রাখুন!</p>
+
+            <div class="mb-5 text-left">
+                <label for="profession" class="block text-gray-700 text-lg font-semibold mb-2">আপনার পেশা কী, বিপ্লবী?</label>
+                <select id="profession" class="input-field">
+                    <option value="">--পেশা নির্বাচন করুন--</option>
+                    <option value="ডাক্তার">ডাক্তার</option>
+                    <option value="ইঞ্জিনিয়ার">ইঞ্জিনিয়ার</option>
+                    <option value="শিক্ষক">শিক্ষক</option>
+                    <option value="সরকারী চাকুরীজীবী">সরকারী চাকুরীজীবী</option>
+                    <option value="ব্যবসায়ী">ব্যবসায়ী</option>
+                    <option value="ফ্রিল্যান্সার">ফ্রিল্যান্সার</option>
+                    <option value="Gen-Z (বিশেষ শাখা)">Gen-Z (বিশেষ শাখা)</option>
+                    <option value="অবসরপ্রাপ্ত আওয়ামী লীগার">অবসরপ্রাপ্ত আওয়ামী লীগার</option>
+                    <option value="অন্যান্য">অন্যান্য</option>
+                </select>
+            </div>
+
+            <div class="mb-5 text-left">
+                <label for="userName" class="block text-gray-700 text-lg font-semibold mb-2">আপনার নাম কী?</label>
+                <input type="text" id="userName" placeholder="এখানে আপনার নাম লিখুন..." class="input-field">
+            </div>
+
+            <div class="mb-6 text-left">
+                <label for="income" class="block text-gray-700 text-lg font-semibold mb-2">মাসিক আয় কত?</label>
+                <input type="number" id="income" placeholder="এখানে সাহস করে লিখুন..." class="input-field" min="0">
+            </div>
+
+            <button id="calculateBtn" class="btn-primary w-full text-xl font-semibold">হিসাব দেখুন!</button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden">
+            <!-- Remaining Money Box -->
+            <div class="card result-box red">
+                <p class="text-2xl font-bold mb-2">আপনার হাতে থাকবে <span class="inline-block animate-pulse">😔</span></p>
+                <p id="remainingAmount" class="text-5xl font-extrabold mb-3"></p>
+                <p id="remainingQuote" class="text-lg font-medium"></p>
+            </div>
+
+            <!-- Funny Quote Box -->
+            <div class="card result-box blue">
+                <p class="text-2xl font-bold mb-2">কর্তৃপক্ষের প্রতিক্রিয়া <span class="inline-block animate-spin">🤔</span></p>
+                <p id="funnyQuote" class="text-lg font-medium"></p>
+            </div>
+
+            <!-- Donation Usage Box -->
+            <div class="card result-box green">
+                <p class="text-2xl font-bold mb-2">আপনার টাকার সদ্ব্যবহার <span class="inline-block animate-bounce">💰</span></p>
+                <p id="donationUsage" class="text-lg font-medium"></p>
+            </div>
+
+            <!-- Chart and Detailed Calculation -->
+            <div class="card">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">আপনার অবদানের গ্রাফচিত্র</h2>
+                <div class="chart-container">
+                    <canvas id="donationPieChart"></canvas>
+                </div>
+
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center mt-6">বিস্তারিত হিসাব-নিকাশ</h2>
+                <div class="text-lg text-gray-700">
+                    <p class="flex justify-between mb-2"><span>দৈনিক:</span> <span id="dailyAmount" class="font-semibold"></span></p>
+                    <p class="flex justify-between mb-2"><span>সাপ্তাহিক:</span> <span id="weeklyAmount" class="font-semibold"></span></p>
+                    <p class="flex justify-between mb-2"><span>মাসিক চাঁদা:</span> <span id="monthlyDonation" class="font-semibold"></span></p>
+                    <p class="flex justify-between mb-2"><span>বার্ষিক চাঁদা:</span> <span id="yearlyDonation" class="font-semibold"></span></p>
+                </div>
+            </div>
+
+            <!-- Download Receipt Button -->
+            <div class="text-center mt-6">
+                <button id="downloadReceiptBtn" class="btn-download text-xl font-semibold">রসিদ ডাউনলোড করুন</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receipt Modal -->
+    <div id="receiptModal" class="receipt-modal">
+        <div class="receipt-content">
+            <button class="close-button" onclick="closeReceiptModal()">×</button>
+            <div class="receipt-header">
+                আত্মত্যাগের চূড়ান্ত রসিদ
+                <br>
+                দেশ ও জাতির কল্যাণে
+            </div>
+            <div class="receipt-details text-left text-gray-800">
+                <p><strong>বিপ্লবী নাম:</strong> <span id="receiptUserName"></span></p>
+                <p><strong>পেশা:</strong> <span id="receiptProfession"></span></p>
+                <p><strong>মাসিক চাঁদা:</strong> <span id="receiptDonation"></span></p>
+                <p><strong>অবশিষ্ট (মাস চালানোর জন্য):</strong> <span id="receiptRemaining"></span></p>
+                <p><strong>তারিখ:</strong> <span id="receiptDate"></span></p>
+            </div>
+            <div class="receipt-footer">
+                "আপনার এই মহৎ আত্মত্যাগ ইতিহাসে স্বর্ণাক্ষরে লেখা থাকবে... আমাদের খাতায়!"
+                <div class="mt-3 text-sm font-bold">দেশ নেতা কর্তৃক যাচাইকৃত</div>
+            </div>
+            <div class="text-center mt-5">
+                <button class="btn-primary w-full" onclick="downloadReceipt()">ডাউনলোড</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Quotes and usage messages based on profession
+        const professionData = {
+            "ডাক্তার": {
+                quote: "রোগী বাঁচুক বা মরুক, চাঁদা কিন্তু দিতেই হবে! স্বাস্থ্যখাত আপনার দিকে চেয়ে আছে!",
+                usage: "আপনার চাঁদা দেশের স্বাস্থ্যখাতকে 'সুস্থ' রাখতে সাহায্য করবে! বিশেষ করে, আমাদের 'পেটের' স্বাস্থ্য!"
+            },
+            "ইঞ্জিনিয়ার": {
+                quote: "ব্রিজ বানান বা রাস্তা, চাঁদা না দিলে কিন্তু আপনার কপালে ভাঙন!",
+                usage: "আপনার চাঁদা দিয়ে নতুন 'উন্নয়নের' পরিকল্পনা হবে, যা শুধু কাগজেই থাকবে! তবে আমাদের পকেট ঠিক থাকবে!"
+            },
+            "শিক্ষক": {
+                quote: "জ্ঞানের আলো ছড়ানোর আগে, চাঁদার আলো ছড়ান! ভবিষ্যৎ প্রজন্ম আপনার উপর নির্ভরশীল!",
+                usage: "শিক্ষাব্যবস্থার 'উন্নয়নে' আপনার চাঁদা ব্যবহার হবে! বিশেষ করে, আমাদের 'নতুন গাড়ি' কেনার জন্য!"
+            },
+            "সরকারী চাকুরীজীবী": {
+                quote: "ফাইল নড়ুক বা না নড়ুক, আপনার চাঁদা কিন্তু ঠিকই নড়বে! দেশের সেবায় নিজেকে উৎসর্গ করুন!",
+                usage: "সরকারি তহবিল 'পূর্ণ' করতে আপনার চাঁদা অপরিহার্য! এতে 'বিশেষ' কিছু মানুষের 'বিশেষ' সুবিধা হবে!"
+            },
+            "ব্যবসায়ী": {
+                quote: "লাভ হোক বা লোকসান, চাঁদা না দিলে কিন্তু ব্যবসা বন্ধ! দেশের অর্থনীতি আপনার হাতে!",
+                usage: "দেশের অর্থনীতিকে 'চাঙ্গা' রাখতে আপনার চাঁদা কাজে লাগবে! নতুন 'ব্যক্তিগত' প্রকল্পেও বিনিয়োগ হবে!"
+            },
+            "ফ্রিল্যান্সার": {
+                quote: "রাত জেগে কাজ করে ডলার আনুন, আর চাঁদা দিয়ে দেশ বাঁচান! আপনার ইন্টারনেট সংযোগ সুরক্ষিত থাকবে!",
+                usage: "ডিজিটাল বাংলাদেশের স্বপ্ন পূরণে আপনার চাঁদা দিয়ে 'গুরুত্বপূর্ণ' কিছু কাজ করা হবে! যেমন, আমাদের 'বিদেশ ভ্রমণ'!"
+            },
+            "Gen-Z (বিশেষ শাখা)": {
+                quote: "টিকটক ছেড়ে চাঁদা দিন, দেশের ভবিষ্যৎ গড়ুন! আপনার এনার্জি দেশের কাজে লাগুক!",
+                usage: "তরুণ প্রজন্মের 'ভবিষ্যৎ' উজ্জ্বল করতে আপনার চাঁদা দিয়ে 'অসাধারণ' কিছু করা হবে! যেমন, আমাদের 'পার্টি'র খরচ!"
+            },
+            "অবসরপ্রাপ্ত আওয়ামী লীগার": { // Changed this entry to be generic
+                quote: "অবসর নিয়েছেন? ভালো কথা! এবার চাঁদা দিন, আপনার অভিজ্ঞতা কাজে লাগবে! দেশ আপনার অবদান ভুলবে না!",
+                usage: "আপনার দীর্ঘদিনের 'ত্যাগের' প্রতিদান হিসেবে এই চাঁদা নেওয়া হচ্ছে! এতে আপনার 'সম্মান' আরও বাড়বে (এবং আমাদের ব্যাংক ব্যালেন্সও)!"
+            },
+            "অন্যান্য": {
+                quote: "আপনার পেশা যাই হোক, দেশের জন্য আপনার অবদান দরকার! কেউ বাদ যাবে না!",
+                usage: "দেশের 'সার্বিক উন্নয়নে' আপনার চাঁদা ব্যবহার হবে! বিশেষ করে, 'কিছু মানুষের' 'ব্যক্তিগত' উন্নয়নে!"
+            }
+        };
+
+        let myChart; // Variable to hold the Chart.js instance
+
+        document.getElementById('calculateBtn').addEventListener('click', calculateDonation);
+        document.getElementById('downloadReceiptBtn').addEventListener('click', showReceiptModal);
+
+        function calculateDonation() {
+            const profession = document.getElementById('profession').value;
+            const userName = document.getElementById('userName').value;
+            const income = parseFloat(document.getElementById('income').value);
+
+            // Basic validation
+            if (!profession) {
+                alert("অনুগ্রহ করে আপনার পেশা নির্বাচন করুন।");
+                return;
+            }
+            if (!userName.trim()) {
+                alert("অনুগ্রহ করে আপনার নাম লিখুন।");
+                return;
+            }
+            if (isNaN(income) || income <= 0) {
+                alert("অনুগ্রহ করে একটি বৈধ মাসিক আয় লিখুন।");
+                return;
+            }
+
+            const donationPercentage = 0.20; // 20%
+            const donationAmount = income * donationPercentage;
+            const remainingAmount = income - donationAmount;
+
+            // Display results
+            document.getElementById('remainingAmount').innerText = `৳ ${remainingAmount.toLocaleString('bn-BD')}.00`;
+            document.getElementById('monthlyDonation').innerText = `৳ ${donationAmount.toLocaleString('bn-BD')}.00`;
+
+            // Daily, Weekly, Yearly calculations for donation
+            document.getElementById('dailyAmount').innerText = `৳ ${(donationAmount / 30).toLocaleString('bn-BD', { maximumFractionDigits: 2 })}`;
+            document.getElementById('weeklyAmount').innerText = `৳ ${(donationAmount / 4).toLocaleString('bn-BD', { maximumFractionDigits: 2 })}`;
+            document.getElementById('yearlyDonation').innerText = `৳ ${(donationAmount * 12).toLocaleString('bn-BD')}.00`;
+
+
+            // Update quotes and usage
+            const selectedProfessionData = professionData[profession] || professionData["অন্যান্য"];
+            document.getElementById('funnyQuote').innerText = selectedProfessionData.quote;
+            document.getElementById('remainingQuote').innerText = "নিজের জন্য কিছু রাখুন, জীবন তো একটাই! (তবে চাঁদা দিতে ভুলবেন না)"; // Slightly modified for more humor
+            document.getElementById('donationUsage').innerText = selectedProfessionData.usage;
+
+            // Show results section
+            document.getElementById('results').classList.remove('hidden');
+
+            // Update Pie Chart
+            updatePieChart(donationAmount, remainingAmount);
+        }
+
+        function updatePieChart(donation, remaining) {
+            const ctx = document.getElementById('donationPieChart').getContext('2d');
+
+            if (myChart) {
+                myChart.destroy(); // Destroy existing chart before creating a new one
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['চাঁদা', 'অবশিষ্ট'],
+                    datasets: [{
+                        data: [donation, remaining],
+                        backgroundColor: ['#ff9800', '#03a9f4'], // Orange for donation, Cyan for remaining
+                        hoverOffset: 10,
+                        borderColor: '#ffffff', // White border for slices
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += `৳ ${context.parsed.toLocaleString('bn-BD')}.00`;
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    family: 'Noto Sans Bengali, Inter, sans-serif'
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'চাঁদা বনাম অবশিষ্ট অর্থের অনুপাত',
+                            font: {
+                                size: 18,
+                                family: 'Noto Sans Bengali, Inter, sans-serif'
+                            },
+                            color: '#333'
+                        }
+                    }
+                }
+            });
+        }
+
+        function showReceiptModal() {
+            const profession = document.getElementById('profession').value;
+            const userName = document.getElementById('userName').value;
+            const income = parseFloat(document.getElementById('income').value);
+            const donationAmount = income * 0.20;
+            const remainingAmount = income - donationAmount;
+            const currentDate = new Date().toLocaleDateString('bn-BD', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            document.getElementById('receiptUserName').innerText = userName;
+            document.getElementById('receiptProfession').innerText = profession;
+            document.getElementById('receiptDonation').innerText = `৳ ${donationAmount.toLocaleString('bn-BD')}.00`;
+            document.getElementById('receiptRemaining').innerText = `৳ ${remainingAmount.toLocaleString('bn-BD')}.00`;
+            document.getElementById('receiptDate').innerText = currentDate;
+
+            document.getElementById('receiptModal').classList.add('show');
+        }
+
+        function closeReceiptModal() {
+            document.getElementById('receiptModal').classList.remove('show');
+        }
+
+        function downloadReceipt() {
+            const receiptContent = document.querySelector('.receipt-content');
+            // Temporarily hide close button for screenshot
+            const closeBtn = receiptContent.querySelector('.close-button');
+            closeBtn.style.display = 'none';
+
+            // Use html2canvas to capture the receipt content
+            html2canvas(receiptContent, {
+                scale: 2, // Increase scale for better quality
+                useCORS: true, // Enable CORS if you have external images (though not used here)
+                backgroundColor: '#ffffff' // Set background to white
+            }).then(canvas => {
+                // Restore close button
+                closeBtn.style.display = 'block';
+
+                const link = document.createElement('a');
+                link.download = 'চাঁদা_রসিদ.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(error => {
+                console.error("Error generating receipt:", error);
+                alert("রসিদ তৈরি করতে সমস্যা হয়েছে।");
+                // Restore close button even on error
+                closeBtn.style.display = 'block';
+            });
+        }
+
+        // Load html2canvas library for receipt download
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        document.head.appendChild(script);
+    </script>
+</body>
+                  </html>
